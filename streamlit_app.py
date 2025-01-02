@@ -41,19 +41,23 @@ if ingredients_list:
         search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
         st.write('The search value for', fruit_chosen, 'is', search_on, '.')
         
-        # Display nutrition information for each selected ingredient
+        # Display the fruit name first
         st.subheader(f"{fruit_chosen} Nutrition Information")
         
         # Fetch data from the Fruityvice API
         fruityvice_response = requests.get(f"https://fruityvice.com/api/fruit/{fruit_chosen}")
         
         if fruityvice_response.status_code == 200:
+            # Assuming the API returns nutrition information in a structured format
             nutrition_data = fruityvice_response.json()
-            st.write(nutrition_data)  # Display the nutrition data as raw text
             
-            # You can convert the nutrition data into a pandas DataFrame for display if needed
-            nutrition_df = pd.DataFrame([nutrition_data])
-            st.dataframe(nutrition_df)  # Display as a dataframe
+            # Convert the JSON data into a pandas DataFrame for better display
+            # Assuming the JSON is structured with key-value pairs that can be directly converted into a dataframe
+            if isinstance(nutrition_data, dict):
+                nutrition_df = pd.DataFrame([nutrition_data])
+                st.dataframe(nutrition_df)  # Display as a DataFrame
+            else:
+                st.error("Nutrition data is not in the expected format.")
         else:
             st.error(f"Error fetching nutrition data for {fruit_chosen}")
     
