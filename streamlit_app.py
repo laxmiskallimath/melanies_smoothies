@@ -17,9 +17,7 @@ st.write('The name on your Smoothie will be:', name_on_order)
 # Connect to Snowflake
 cnx = st.connection("snowflake")
 session = cnx.session()
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'),col('SEARCH_ON'))
-#st.dataframe(data=my_dataframe,use_container_width=True)
-#st.stop()
+my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'), col('SEARCH_ON'))
 
 # Convert the snowpark dataframe to a Pandas Dataframe so we can use the LOC function
 pd_df = my_dataframe.to_pandas()
@@ -33,17 +31,33 @@ ingredients_list = st.multiselect(
 )
 
 if ingredients_list:
-    # Display nutrition information for each selected ingredient
+    # Create an empty string to store the selected ingredients
+    ingredients_string = ""
+    
+    # Iterate through the selected fruits and fetch the 'SEARCH_ON' value
     for fruit_chosen in ingredients_list:
+        # Add fruit name to the ingredients string
+        ingredients_string += fruit_chosen + " "
+        
+        # Fetch 'SEARCH_ON' value for the fruit
+        search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
+        
+        # Display the 'SEARCH_ON' value
+        st.write('The search value for', fruit_chosen, 'is', search_on, '.')
+        
+        # Display nutrition information for each selected ingredient
         st.subheader(f"{fruit_chosen} Nutrition Information")  # Display header for the fruit
         
-        # Fetch data from the API
-        smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{fruit_chosen}")
-        smoothiefroot_response.raise_for_status()  # Ensure proper error handling
+        # Fetch data from the Fruityvice API
+        fruityvice_response = requests.get(f"https://fruityvice.com/api/fruit/{fruit_chosen}")
+        fruityvice_response.raise_for_status()  # Ensure proper error handling
 
         # Display the nutrition information as a dataframe
-        nutrition_data = smoothiefroot_response.json()  # Assuming API returns JSON data
-        sf_df = st.dataframe(data=nutrition_data, use_container_width=True)
+        nutrition_data = fruityvice_response.json()  # Assuming API returns JSON data
+        st.dataframe(data=nutrition_data, use_container_width=True)
+    
+    # Display the string of selected ingredients
+    st.write(f"You've selected the following ingredients: {ingredients_string.strip()}")
     
     # Place the button in the correct location
     time_to_insert = st.button('Submit Order')
