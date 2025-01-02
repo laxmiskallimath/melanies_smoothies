@@ -39,8 +39,8 @@ if ingredients_list:
         smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + fruit_chosen)
         smoothiefroot_response.raise_for_status()  # Ensure proper error handling
         sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
-    except requests.RequestException as e:
-        st.error(f"Error fetching data for {fruit_chosen}: {e}")
+    #except requests.RequestException as e:
+        #st.error(f"Error fetching data for {fruit_chosen}: {e}")
     
     # Place the button in the correct location
     time_to_insert = st.button('Submit Order')
