@@ -1,4 +1,4 @@
-# Import python packages
+ # Import python packages
 import streamlit as st
 from snowflake.snowpark.functions import col
 import requests
@@ -21,12 +21,11 @@ my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT
 
 # Convert the snowpark dataframe to a Pandas DataFrame so we can use the LOC function
 pd_df = my_dataframe.to_pandas()
-st.dataframe(pd_df)
-st.stop()
 
+# Display the available fruits in multiselect
 ingredients_list = st.multiselect(
     'Choose up to 5 ingredients:',
-    [row['FRUIT_NAME'] for row in my_dataframe],  # Extract fruit names directly here
+    [row['FRUIT_NAME'] for row in pd_df],  # Extract fruit names from the Pandas dataframe
     max_selections=5
 )
 
