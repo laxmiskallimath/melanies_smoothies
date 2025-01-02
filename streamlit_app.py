@@ -17,19 +17,18 @@ st.write('The name on your Smoothie will be:', name_on_order)
 # Connect to Snowflake
 cnx = st.connection("snowflake")
 session = cnx.session()
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'),col('SEARCH_ON'))
-#st.dataframe(data=my_dataframe,use_container_width=True)
-#st.stop()
+my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'), col('SEARCH_ON'))
 
-# Convert the Snowpark Dataframe to a Pandas DataFrame so we can use the LOC function
+# Convert the Snowpark DataFrame to a Pandas DataFrame so we can use the LOC function
 pd_df = my_dataframe.to_pandas()
 
-# st.dataframe(pd_df)
-# st.stop()
+# Display the dataframe for debugging purposes
+st.dataframe(pd_df)
 
+# Create a multiselect dropdown to choose fruits
 ingredients_list = st.multiselect(
     'Choose up to 5 ingredients:',
-    my_dataframe,
+    pd_df['FRUIT_NAME'].tolist(),  # Pass only the fruit names from the dataframe
     max_selections=5
 )
 
@@ -47,3 +46,22 @@ if ingredients_list:
         
         # Fetch data from the Fruityvice API
         fruityvice_response = requests.get(f"https://fruityvice.com/api/fruit/{fruit_chosen}")
+        
+        if fruityvice_response.status_code == 200:
+            nutrition_data = fruityvice_response.json()
+            st.write(nutrition_data)  # Display the nutrition data as raw text
+            
+            # You can convert the nutrition data into a pandas DataFrame for display if needed
+            nutrition_df = pd.DataFrame([nutrition_data])
+            st.dataframe(nutrition_df)  # Display as a dataframe
+        else:
+            st.error(f"Error fetching nutrition data for {fruit_chosen}")
+    
+    # Display the selected ingredients
+    st.write(f"You've selected the following ingredients: {ingredients_string.strip()}")
+    
+    # Place the button in the correct location
+    time_to_insert = st.button('Submit Order')
+
+    if time_to_insert:
+        st.success('Your Smoothie is ordered!', icon="✅")
