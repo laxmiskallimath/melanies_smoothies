@@ -20,21 +20,22 @@ my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT
 
 ingredients_list = st.multiselect(
     'Choose up to 5 ingredients:',
-    my_dataframe,
+    [row['FRUIT_NAME'] for row in my_dataframe],  # Extract fruit names directly here
     max_selections=5
 )
 
 if ingredients_list:
-    # Combine the selected ingredients into a single string
-    ingredients_string = ''
+    # Display nutrition information for each selected ingredient
     for fruit_chosen in ingredients_list:
-        ingredients_string += fruit_chosen + ' '
-        st.subheader(fruit_chosen + ' Nutrition Information')  # Corrected variable name
-    
-    # Fetch data from the API
-    smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + fruit_chosen)
-    smoothiefroot_response.raise_for_status()  # Ensure proper error handling
-    sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
+        st.subheader(f"{fruit_chosen} Nutrition Information")  # Display header for the fruit
+        
+        # Fetch data from the API
+        smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{fruit_chosen}")
+        smoothiefroot_response.raise_for_status()  # Ensure proper error handling
+
+        # Display the nutrition information as a dataframe
+        nutrition_data = smoothiefroot_response.json()  # Assuming API returns JSON data
+        sf_df = st.dataframe(data=nutrition_data, use_container_width=True)
     
     # Place the button in the correct location
     time_to_insert = st.button('Submit Order')
