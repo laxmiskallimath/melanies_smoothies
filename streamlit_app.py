@@ -39,9 +39,9 @@ if ingredients_list:
     # Checkbox to mark the order as filled
     is_filled = st.checkbox('Mark as Filled', value=False)
 
-    # Generate the insert statement with the filled status
+    # Generate the insert statement with the correct field name
     my_insert_stmt = f"""
-    INSERT INTO smoothies.public.orders (ingredients, name_on_order, is_filled)
+    INSERT INTO smoothies.public.orders (ingredients, name_on_order, ORDER_FILLED)
     VALUES ('{ingredients_string}', '{name_on_order}', {is_filled});
     """
 
