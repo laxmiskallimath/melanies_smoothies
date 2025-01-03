@@ -1,4 +1,3 @@
-# Import python packages
 import requests
 import pandas as pd
 import streamlit as st
@@ -6,10 +5,7 @@ from snowflake.snowpark.functions import col
 
 # Write directly to the app
 st.title(":cup_with_straw: Customize your Smoothie! :cup_with_straw:")
-st.write(
-    """Choose the fruits you want in your custom Smoothie!
-    """
-)
+st.write("Choose the fruits you want in your custom Smoothie!")
 
 # Smoothie Name Input
 name_on_order = st.text_input('Name on Smoothie:')
@@ -50,14 +46,33 @@ if ingredients_list:
         session.sql(my_insert_stmt).collect()
         st.success(f'Your Smoothie is ordered, {name_on_order}!', icon="✅")
 
-# Mark Order as Filled (Checkbox)
-st.header("Mark Order as Filled")
-order_id_to_fill = st.number_input('Enter Order ID to mark as filled:', min_value=1, step=1)
+# Mark Order as Filled (Checkboxes for Existing Orders)
+st.header("Mark Orders as Filled")
 
-mark_filled_checkbox = st.checkbox('Mark this order as filled', value=False)
+# Fetch current orders where order_filled is FALSE (pending orders)
+pending_orders_df = session.table('smoothies.public.orders').filter(col('order_filled') == False).select(col('id'), col('name_on_order'), col('ingredients')).to_pandas()
 
-if mark_filled_checkbox:
-    # Update the order status to TRUE (Filled) in the database
-    update_stmt = f"UPDATE smoothies.public.orders SET order_filled = TRUE WHERE id = {order_id_to_fill} AND order_filled = FALSE"
-    session.sql(update_stmt).collect()
-    st.success(f"Order {order_id_to_fill} marked as filled!")
+# If there are pending orders, display them and allow users to select checkboxes
+if not pending_orders_df.empty:
+    for index, row in pending_orders_df.iterrows():
+        order_id = row['id']
+        order_name = row['name_on_order']
+        ingredients = row['ingredients']
+
+        # Create a checkbox for each order
+        checkbox_label = f"Mark Order {order_id} ({order_name}) as Filled"
+        mark_filled = st.checkbox(checkbox_label, key=order_id)
+
+        if mark_filled:
+            # Update the order as filled in the database
+            update_stmt = f"UPDATE smoothies.public.orders SET order_filled = TRUE WHERE id = {order_id} AND order_filled = FALSE"
+            session.sql(update_stmt).collect()
+            st.success(f"Order {order_id} ({order_name}) has been marked as filled!")
+
+else:
+    st.write("No pending orders to mark as filled.")
+
+# Optional: Display current orders and their statuses (for visual confirmation)
+st.subheader("Current Orders")
+orders_df = session.table('smoothies.public.orders').select(col('id'), col('ingredients'), col('name_on_order'), col('order_filled')).to_pandas()
+st.dataframe(orders_df)
