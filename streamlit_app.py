@@ -50,20 +50,8 @@ if ingredients_list:
         session.sql(my_insert_stmt).collect()
         st.success(f'Your Smoothie is ordered, {name_on_order}!', icon="✅")
 
-# Manage Orders Section
-st.header("Manage Orders")
-orders_df = session.table('smoothies.public.orders').to_pandas()
-
-# Display Orders with Status
-st.subheader("Pending Orders")
-pending_orders_df = orders_df[orders_df['ORDER_FILLED'] == False]
-st.dataframe(pending_orders_df)
-
-st.subheader("Completed Orders")
-completed_orders_df = orders_df[orders_df['ORDER_FILLED'] == True]
-st.dataframe(completed_orders_df)
-
 # Update Order Status
+st.header("Update Order Status")
 order_id = st.number_input('Enter Order ID to mark as filled:', min_value=1, step=1)
 mark_filled = st.button('Mark as Filled')
 
