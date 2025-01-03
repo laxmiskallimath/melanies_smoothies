@@ -49,3 +49,15 @@ if ingredients_list:
     if time_to_insert:
         session.sql(my_insert_stmt).collect()
         st.success(f'Your Smoothie is ordered, {name_on_order}!', icon="✅")
+
+# Mark Order as Filled
+st.header("Mark Order as Filled")
+order_id_to_fill = st.number_input('Enter Order ID to mark as filled:', min_value=1, step=1)
+
+mark_as_filled_button = st.button('Mark Order as Filled')
+
+if mark_as_filled_button:
+    # Update the order status to TRUE (Filled) in the database
+    update_stmt = f"UPDATE smoothies.public.orders SET order_filled = TRUE WHERE id = {order_id_to_fill} AND order_filled = FALSE"
+    session.sql(update_stmt).collect()
+    st.success(f"Order {order_id_to_fill} marked as filled!")
