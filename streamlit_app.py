@@ -49,7 +49,7 @@ if ingredients_list:
 # Mark Order as Filled (Checkboxes for Existing Orders)
 st.header("Mark Orders as Filled")
 
-# Fetch current orders where order_filled is FALSE (pending orders)
+# Fetch current pending orders (order_filled=False)
 pending_orders_df = session.table('smoothies.public.orders').filter(col('order_filled') == False).select(col('id'), col('name_on_order'), col('ingredients')).to_pandas()
 
 # If there are pending orders, display them and allow users to select checkboxes
